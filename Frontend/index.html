@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traffic Prediction</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f4f1e8;
+      --card: rgba(255, 255, 255, 0.88);
+      --text: #1d2a35;
+      --muted: #5c6b73;
+      --accent: #d96c3d;
+      --accent-dark: #9f4420;
+      --line: #f0b26f;
+      --border: rgba(29, 42, 53, 0.12);
+      --error: #b42318;
+      --success: #166534;
+      --shadow: 0 18px 40px rgba(29, 42, 53, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 204, 128, 0.6), transparent 36%),
+        radial-gradient(circle at bottom right, rgba(217, 108, 61, 0.28), transparent 28%),
+        linear-gradient(135deg, #f8f3e7, #efe6d6 42%, #f4ede1);
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .app {
+      width: min(980px, 100%);
+      background: var(--card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 3rem);
+    }
+
+    p {
+      margin: 0 0 24px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      font: inherit;
+    }
+
+    input,
+    select {
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin: 24px 0 16px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      cursor: pointer;
+      padding: 13px 18px;
+      font-weight: 700;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 12px 24px rgba(217, 108, 61, 0.28);
+    }
+
+    .secondary {
+      background: white;
+      color: var(--text);
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: progress;
+      transform: none;
+    }
+
+    .status {
+      min-height: 28px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .status.error {
+      color: var(--error);
+    }
+
+    .status.success {
+      color: var(--success);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid var(--border);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .metric strong {
+      font-size: 1.5rem;
+    }
+
+    .chart-shell {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    canvas {
+      width: 100%;
+      max-height: 360px;
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1>Traffic Flow Predictor</h1>
+    <p>Run a single prediction or forecast the next 24 hours from your latest traffic values.</p>
+
+    <section class="grid">
+      <div>
+        <label for="year">Year</label>
+        <input type="number" id="year" min="2000" max="2100">
+      </div>
+      <div>
+        <label for="month">Month</label>
+        <input type="number" id="month" min="1" max="12">
+      </div>
+      <div>
+        <label for="day">Day</label>
+        <input type="number" id="day" min="1" max="31">
+      </div>
+      <div>
+        <label for="hour">Hour</label>
+        <input type="number" id="hour" min="0" max="23">
+      </div>
+      <div>
+        <label for="weekday">Weekday</label>
+        <select id="weekday">
+          <option value="0">Monday</option>
+          <option value="1">Tuesday</option>
+          <option value="2">Wednesday</option>
+          <option value="3">Thursday</option>
+          <option value="4">Friday</option>
+          <option value="5">Saturday</option>
+          <option value="6">Sunday</option>
+        </select>
+      </div>
+      <div>
+        <label for="junction">Junction</label>
+        <select id="junction">
+          <option value="1">Junction 1</option>
+          <option value="2">Junction 2</option>
+          <option value="3">Junction 3</option>
+          <option value="4">Junction 4</option>
+        </select>
+      </div>
+      <div>
+        <label for="lag1">Previous Hour Traffic</label>
+        <input type="number" id="lag1" min="0">
+      </div>
+      <div>
+        <label for="lag2">2nd Previous Hour Traffic</label>
+        <input type="number" id="lag2" min="0">
+      </div>
+    </section>
+
+    <div class="actions">
+      <button id="predictBtn" class="primary" type="button">Predict</button>
+      <button id="predict24Btn" class="secondary" type="button">Predict Next 24 Hours</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <section class="summary">
+      <article class="metric">
+        <span>Latest Prediction</span>
+        <strong id="singlePrediction">--</strong>
+      </article>
+      <article class="metric">
+        <span>Data Source</span>
+        <strong id="predictionSource">--</strong>
+      </article>
+      <article class="metric">
+        <span>24h Peak</span>
+        <strong id="peakPrediction">--</strong>
+      </article>
+    </section>
+
+    <section class="chart-shell">
+      <canvas id="chart"></canvas>
+    </section>
+  </main>
+
+  <script>
+    const isFileProtocol = window.location.protocol === "file:";
+    const isLikelyWrongLocalServer =
+      ["localhost", "127.0.0.1"].includes(window.location.hostname) &&
+      window.location.port &&
+      window.location.port !== "3000";
+    const apiBase = (isFileProtocol || isLikelyWrongLocalServer)
+      ? "http://localhost:3000"
+      : window.location.origin;
+    const chartCanvas = document.getElementById("chart");
+    const statusEl = document.getElementById("status");
+    const predictBtn = document.getElementById("predictBtn");
+    const predict24Btn = document.getElementById("predict24Btn");
+    let chart;
+
+    function setDefaults() {
+      const now = new Date();
+      document.getElementById("year").value = now.getFullYear();
+      document.getElementById("month").value = now.getMonth() + 1;
+      document.getElementById("day").value = now.getDate();
+      document.getElementById("hour").value = now.getHours();
+      document.getElementById("weekday").value = (now.getDay() + 6) % 7;
+      document.getElementById("junction").value = 1;
+      document.getElementById("lag1").value = 120;
+      document.getElementById("lag2").value = 100;
+    }
+
+    function setLoading(isLoading) {
+      predictBtn.disabled = isLoading;
+      predict24Btn.disabled = isLoading;
+    }
+
+    function setStatus(message, type = "") {
+      statusEl.textContent = message;
+      statusEl.className = `status ${type}`.trim();
+    }
+
+    function getPayload() {
+      return {
+        year: Number(document.getElementById("year").value),
+        hour: Number(document.getElementById("hour").value),
+        day: Number(document.getElementById("day").value),
+        month: Number(document.getElementById("month").value),
+        weekday: Number(document.getElementById("weekday").value),
+        junction: Number(document.getElementById("junction").value),
+        lag1: Number(document.getElementById("lag1").value),
+        lag2: Number(document.getElementById("lag2").value)
+      };
+    }
+
+    async function requestJson(path, payload) {
+      let response;
+
+      try {
+        response = await fetch(`${apiBase}${path}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch (error) {
+        throw new Error("Cannot reach the backend. Open the app from the backend server at http://localhost:3000.");
+      }
+
+      const raw = await response.text();
+      let result = {};
+
+      if (raw) {
+        try {
+          result = JSON.parse(raw);
+        } catch (error) {
+          if (!response.ok) {
+            throw new Error(`Server returned ${response.status}. Make sure you opened the app from http://localhost:3000.`);
+          }
+
+          throw new Error(`Server returned an invalid response (${response.status})`);
+        }
+      }
+
+      if (!response.ok) {
+        const fallback = raw ? raw.slice(0, 120).replace(/\s+/g, " ").trim() : `Request failed (${response.status})`;
+        const message = result.errors ? result.errors.join(", ") : (result.error || fallback);
+        throw new Error(message);
+      }
+
+      return result;
+    }
+
+    function renderChart(labels, data) {
+      const ctx = chartCanvas.getContext("2d");
+      if (chart) {
+        chart.destroy();
+      }
+
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "Predicted Traffic",
+            data,
+            borderColor: "#d96c3d",
+            backgroundColor: "rgba(217, 108, 61, 0.16)",
+            borderWidth: 3,
+            fill: true,
+            tension: 0.28,
+            pointRadius: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    async function predict() {
+      setLoading(true);
+      setStatus("Running prediction...");
+
+      try {
+        const result = await requestJson("/api/predict", getPayload());
+        const predictionValue = Number(result.prediction.prediction).toFixed(2);
+
+        document.getElementById("singlePrediction").textContent = predictionValue;
+        document.getElementById("predictionSource").textContent = result.source;
+        setStatus(`Single-hour prediction ready: ${predictionValue}`, "success");
+      } catch (error) {
+        setStatus(error.message, "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function predict24() {
+      setLoading(true);
+      setStatus("Forecasting the next 24 hours...");
+
+      try {
+        const result = await requestJson("/api/predict-24h", getPayload());
+        const peak = Math.max(...result.predictions);
+
+        document.getElementById("peakPrediction").textContent = peak.toFixed(2);
+        renderChart(result.labels, result.predictions);
+        setStatus("24-hour forecast ready.", "success");
+      } catch (error) {
+        setStatus(error.message, "error");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    predictBtn.addEventListener("click", predict);
+    predict24Btn.addEventListener("click", predict24);
+    setDefaults();
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+FROM node:18
+
+WORKDIR /app
+
+COPY Backend/package*.json ./Backend/
+WORKDIR /app/Backend
+RUN npm install
+
+WORKDIR /app
+COPY Backend ./Backend
+COPY Frontend ./Frontend
+
+WORKDIR /app/Backend
+
+ENV PORT=3000
+ENV ML_URL=http://prediction-service:8000/predict
+ENV REDIS_URL=redis://redis:6379
+ENV FRONTEND_DIR=/app/Frontend
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]

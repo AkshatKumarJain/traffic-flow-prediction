@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Backend/dockerfile
+    environment:
+      PORT: 3000
+      ML_URL: http://prediction-service:8000/predict
+      REDIS_URL: redis://redis:6379
+      FRONTEND_DIR: /app/Frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prediction-service
+      - redis
+
+  prediction-service:
+    build:
+      context: ./prediction-service
+      dockerfile: dockerfile
+    ports:
+      - "8000:8000"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"

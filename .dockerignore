@@ -1,0 +1,4 @@
+Backend/node_modules
+prediction-service/__pycache__
+**/__pycache__
+*.pyc
