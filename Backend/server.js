@@ -7,14 +7,16 @@ const { createClient } = require("redis");
 
 const PORT = Number(process.env.PORT || 3000);
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
-const ML_URL = process.env.ML_URL || "http://127.0.0.1:8000/predict";
+const ML_HOSTPORT = process.env.ML_HOSTPORT;
+const ML_URL = process.env.ML_URL || (ML_HOSTPORT ? `http://${ML_HOSTPORT}/predict` : "http://127.0.0.1:8000/predict");
 const FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, "..", "Frontend");
 const CACHE_TTL_SECONDS = 3600;
 const FEATURE_COUNT = 13;
+const CORS_ORIGIN = process.env.CORS_ORIGIN;
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors(CORS_ORIGIN ? { origin: CORS_ORIGIN } : undefined));
 
 app.use((error, req, res, next) => {
   if (error instanceof SyntaxError && "body" in error) {

@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: traffic-flow-backend
+    runtime: docker
+    dockerfilePath: ./Backend/dockerfile
+    dockerContext: .
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: FRONTEND_DIR
+        value: /app/Frontend
+      - key: ML_HOSTPORT
+        fromService:
+          type: pserv
+          name: traffic-flow-prediction-service
+          property: hostport
+      - key: REDIS_URL
+        fromDatabase:
+          name: traffic-flow-cache
+          property: connectionString
+
+  - type: pserv
+    name: traffic-flow-prediction-service
+    runtime: docker
+    dockerfilePath: ./prediction-service/dockerfile
+    dockerContext: ./prediction-service
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /health
+
+  - type: keyvalue
+    name: traffic-flow-cache
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
