@@ -8,6 +8,7 @@ services:
       ML_URL: http://prediction-service:8000/predict
       REDIS_URL: redis://redis:6379
       FRONTEND_DIR: /app/Frontend
+      CACHE_NAMESPACE: model-v2
     ports:
       - "3000:3000"
     depends_on:

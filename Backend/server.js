@@ -13,6 +13,7 @@ const FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, "..", "Fro
 const CACHE_TTL_SECONDS = 3600;
 const FEATURE_COUNT = 12;
 const CORS_ORIGIN = process.env.CORS_ORIGIN;
+const CACHE_NAMESPACE = process.env.CACHE_NAMESPACE || "model-v2";
 
 const app = express();
 app.use(express.json());
@@ -123,6 +124,10 @@ function generateFeatures({ hour, day, month, weekday, junction, lag1, lag2 }) {
   ];
 }
 
+function buildCacheKey(features) {
+  return `${CACHE_NAMESPACE}:${features.join(",")}`;
+}
+
 function buildTimestamp({ year, month, day, hour }) {
   return new Date(Date.UTC(year, month - 1, day, hour));
 }
@@ -193,7 +198,7 @@ async function handlePredict(req, res) {
 
   try {
     const features = generateFeatures(payload);
-    const key = features.join(",");
+    const key = buildCacheKey(features);
     const cached = await getCachedPrediction(key);
 
     if (cached) {
