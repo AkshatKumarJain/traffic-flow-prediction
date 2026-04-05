@@ -37,3 +37,16 @@ Then open:
 ```text
 http://localhost:3000
 ```
+
+## Retraining The Model
+
+If `traffic.csv` is present in the project root, retrain the model with:
+
+```bash
+python prediction-service/train_model.py
+```
+
+This rewrites:
+
+- `prediction-service/traffic_model.pkl`
+- `prediction-service/model_metadata.json`

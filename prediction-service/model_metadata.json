@@ -1,0 +1,22 @@
+{
+  "model_type": "GradientBoostingRegressor",
+  "feature_names": [
+    "hour",
+    "day",
+    "month",
+    "weekday",
+    "hour_sin",
+    "hour_cos",
+    "lag_1",
+    "lag_2",
+    "rolling_mean",
+    "Junction_2",
+    "Junction_3",
+    "Junction_4"
+  ],
+  "train_rows": 30738,
+  "test_rows": 17374,
+  "mae": 3.872661651068852,
+  "rmse": 6.599946320371819,
+  "split_date": "2017-01-01"
+}

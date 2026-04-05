@@ -5,7 +5,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
-FEATURE_COUNT = 13
+FEATURE_COUNT = 12
 MODEL_PATH = Path(__file__).with_name("traffic_model.pkl")
 
 

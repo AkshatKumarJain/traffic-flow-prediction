@@ -11,7 +11,7 @@ const ML_HOSTPORT = process.env.ML_HOSTPORT;
 const ML_URL = process.env.ML_URL || (ML_HOSTPORT ? `http://${ML_HOSTPORT}/predict` : "http://127.0.0.1:8000/predict");
 const FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, "..", "Frontend");
 const CACHE_TTL_SECONDS = 3600;
-const FEATURE_COUNT = 13;
+const FEATURE_COUNT = 12;
 const CORS_ORIGIN = process.env.CORS_ORIGIN;
 
 const app = express();
@@ -102,13 +102,12 @@ function normalizePredictionInput(payload) {
   };
 }
 
-function generateFeatures({ year, hour, day, month, weekday, junction, lag1, lag2 }) {
+function generateFeatures({ hour, day, month, weekday, junction, lag1, lag2 }) {
   const hourSin = Math.sin((2 * Math.PI * hour) / 24);
   const hourCos = Math.cos((2 * Math.PI * hour) / 24);
   const rollingMean = (lag1 + lag2) / 2;
 
   return [
-    year,
     hour,
     day,
     month,
@@ -228,7 +227,6 @@ async function handlePredict24h(req, res) {
     for (let i = 0; i < 24; i += 1) {
       const parts = getTimeParts(cursor);
       const features = generateFeatures({
-        year: parts.year,
         hour: parts.hour,
         day: parts.day,
         month: parts.month,
