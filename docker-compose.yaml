@@ -2,7 +2,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Backend/dockerfile
+      dockerfile: Backend/Dockerfile
     environment:
       PORT: 3000
       ML_URL: http://prediction-service:8000/predict
@@ -18,7 +18,7 @@ services:
   prediction-service:
     build:
       context: ./prediction-service
-      dockerfile: dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
 

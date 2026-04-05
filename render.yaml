@@ -2,7 +2,7 @@ services:
   - type: web
     name: traffic-flow-backend
     runtime: docker
-    dockerfilePath: ./Backend/dockerfile
+    dockerfilePath: ./Backend/Dockerfile
     dockerContext: .
     plan: free
     autoDeploy: true
@@ -27,11 +27,10 @@ services:
   - type: pserv
     name: traffic-flow-prediction-service
     runtime: docker
-    dockerfilePath: ./prediction-service/dockerfile
+    dockerfilePath: ./prediction-service/Dockerfile
     dockerContext: ./prediction-service
     plan: starter
     autoDeploy: true
-    healthCheckPath: /health
 
   - type: keyvalue
     name: traffic-flow-cache
