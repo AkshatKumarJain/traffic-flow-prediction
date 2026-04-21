@@ -20,7 +20,8 @@ services:
           name: traffic-flow-prediction-service
           property: host
       - key: REDIS_URL
-        fromDatabase:
+        fromService:
+          type: keyvalue
           name: traffic-flow-cache
           property: connectionString
 
