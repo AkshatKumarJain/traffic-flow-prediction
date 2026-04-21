@@ -19,6 +19,10 @@ services:
           type: web
           name: traffic-flow-prediction-service
           property: host
+      - key: REDIS_URL
+        fromDatabase:
+          name: traffic-flow-cache
+          property: connectionString
 
   - type: web
     runtime: docker
@@ -28,3 +32,9 @@ services:
     plan: free
     autoDeploy: true
     healthCheckPath: /health
+
+  - type: keyvalue
+    name: traffic-flow-cache
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
