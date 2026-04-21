@@ -1,7 +1,7 @@
 services:
   - type: web
-    name: traffic-flow-backend
     runtime: docker
+    name: traffic-flow-backend
     dockerfilePath: ./Backend/Dockerfile
     dockerContext: .
     plan: free
@@ -14,26 +14,18 @@ services:
         value: /app/Frontend
       - key: CACHE_NAMESPACE
         value: model-v2
-      - key: ML_HOSTPORT
+      - key: ML_URL
         fromService:
-          type: pserv
+          type: web
           name: traffic-flow-prediction-service
-          property: hostport
-      - key: REDIS_URL
-        fromDatabase:
-          name: traffic-flow-cache
-          property: connectionString
+          property: url
+        sync: false
 
-  - type: pserv
-    name: traffic-flow-prediction-service
+  - type: web
     runtime: docker
+    name: traffic-flow-prediction-service
     dockerfilePath: ./prediction-service/Dockerfile
     dockerContext: ./prediction-service
-    plan: starter
-    autoDeploy: true
-
-  - type: keyvalue
-    name: traffic-flow-cache
     plan: free
-    maxmemoryPolicy: allkeys-lru
-    ipAllowList: []
+    autoDeploy: true
+    healthCheckPath: /health

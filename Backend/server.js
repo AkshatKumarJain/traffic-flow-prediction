@@ -8,12 +8,34 @@ const { createClient } = require("redis");
 const PORT = Number(process.env.PORT || 3000);
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 const ML_HOSTPORT = process.env.ML_HOSTPORT;
-const ML_URL = process.env.ML_URL || (ML_HOSTPORT ? `http://${ML_HOSTPORT}/predict` : "http://127.0.0.1:8000/predict");
 const FRONTEND_DIR = process.env.FRONTEND_DIR || path.join(__dirname, "..", "Frontend");
 const CACHE_TTL_SECONDS = 3600;
 const FEATURE_COUNT = 12;
 const CORS_ORIGIN = process.env.CORS_ORIGIN;
 const CACHE_NAMESPACE = process.env.CACHE_NAMESPACE || "model-v2";
+
+function resolveMlUrl() {
+  if (process.env.ML_URL) {
+    try {
+      const url = new URL(process.env.ML_URL);
+      if (url.pathname === "/" || url.pathname === "") {
+        url.pathname = "/predict";
+      }
+
+      return url.toString();
+    } catch (error) {
+      return process.env.ML_URL;
+    }
+  }
+
+  if (ML_HOSTPORT) {
+    return `http://${ML_HOSTPORT}/predict`;
+  }
+
+  return "http://127.0.0.1:8000/predict";
+}
+
+const ML_URL = resolveMlUrl();
 
 const app = express();
 app.use(express.json());
