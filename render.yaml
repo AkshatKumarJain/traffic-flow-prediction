@@ -18,8 +18,7 @@ services:
         fromService:
           type: web
           name: traffic-flow-prediction-service
-          property: url
-        sync: false
+          property: host
 
   - type: web
     runtime: docker

@@ -17,7 +17,10 @@ const CACHE_NAMESPACE = process.env.CACHE_NAMESPACE || "model-v2";
 function resolveMlUrl() {
   if (process.env.ML_URL) {
     try {
-      const url = new URL(process.env.ML_URL);
+      const rawUrl = process.env.ML_URL.includes("://")
+        ? process.env.ML_URL
+        : `https://${process.env.ML_URL}`;
+      const url = new URL(rawUrl);
       if (url.pathname === "/" || url.pathname === "") {
         url.pathname = "/predict";
       }
